@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 
+	"github.com/martinsaporiti/golang_mocks_sample/models"
 	"github.com/martinsaporiti/golang_mocks_sample/services"
 )
 
@@ -18,33 +19,30 @@ func NewEchoServer(service services.User) *EchoServer {
 	}
 }
 
-func (es *EchoServer) SaveUserHandler(c echo.Context) error {
-	type requestType struct {
-		Name string `json:"name"`
-	}
+func (es *EchoServer) SaveUserHandler(ctx echo.Context) error {
 
-	var request requestType
+	var user models.User
 
-	if err := c.Bind(&request); err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{
+	if err := ctx.Bind(&user); err != nil {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
 			"message": "invalid request to create user",
 		})
 	}
 
-	if request.Name == "" {
-		return c.JSON(http.StatusBadRequest, echo.Map{
+	if user.Name == "" {
+		return ctx.JSON(http.StatusBadRequest, echo.Map{
 			"message": "invalid request to create user, user name is required... :(",
 		})
 	}
 
 	id, err := es.service.Save("name")
 	if err != nil {
-		return c.JSON(http.StatusInternalServerError, echo.Map{
+		return ctx.JSON(http.StatusInternalServerError, echo.Map{
 			"message": err.Error(),
 		})
 	}
 
-	return c.JSON(http.StatusCreated, echo.Map{
+	return ctx.JSON(http.StatusCreated, echo.Map{
 		"id": id,
 	})
 }
